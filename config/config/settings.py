@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'apps.logistics',
     'apps.quality_control',
     'apps.analytics',
+    'apps.dashboard',
 ]
 
 MIDDLEWARE = [
@@ -60,6 +61,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 TEMPLATES = [
     {
