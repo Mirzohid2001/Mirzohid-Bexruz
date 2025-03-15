@@ -1,0 +1,58 @@
+{% extends 'warehouse/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-2 bg-dark sidebar animate__animated animate__fadeInLeft">
+        <div class="sidebar-sticky text-white py-4">
+            <h5>Омборхона меню</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'dashboard' %}" class="nav-link text-white">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'batch_list' %}" class="nav-link text-white">Partiyalar</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-10">
+        <h2 class="mt-3 animate__animated animate__fadeInDown">Partiyalar ro'yxati</h2>
+        <table class="table table-bordered table-hover animate__animated animate__fadeInUp">
+            <thead class="table-secondary">
+                <tr>
+                    <th>Partiya raqami</th>
+                    <th>Mahsulot</th>
+                    <th>Ishlab chiqarilgan sana</th>
+                    <th>Yaroqlilik muddati</th>
+                    <th>Kirim</th>
+                    <th>Chiqim</th>
+                    <th>Joriy qoldiq</th>
+                    <th>Amallar</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for batch in batches %}
+                <tr>
+                    <td>{{ batch.batch_number }}</td>
+                    <td>{{ batch.product.name }}</td>
+                    <td>{{ batch.manufacture_date }}</td>
+                    <td>{{ batch.expiry_date }}</td>
+                    <td>{{ batch.in_qty }}</td>
+                    <td>{{ batch.out_qty }}</td>
+                    <td>{{ batch.quantity }}</td>
+                    <td>
+                        <a href="{% url 'batch_detail' batch.pk %}" class="btn btn-sm btn-info">Detal</a>
+                        <a href="{% url 'batch_update' batch.pk %}" class="btn btn-sm btn-warning">Tahrirlash</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">Ma'lumot topilmadi</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'batch_create' %}" class="btn btn-success mt-3 animate__animated animate__bounceIn">Yangi Partiya Qo'shish</a>
+    </div>
+</div>
+{% endblock content %}

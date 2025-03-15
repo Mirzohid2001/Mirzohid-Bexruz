@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'apps.quality_control',
     'apps.analytics',
     'apps.dashboard',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

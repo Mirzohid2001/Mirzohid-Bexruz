@@ -1,0 +1,28 @@
+{% extends 'warehouse/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-2 bg-dark sidebar animate__animated animate__fadeInLeft">
+        <div class="sidebar-sticky text-white py-4">
+            <h5>Омборхона меню</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'movement_list' %}" class="nav-link text-white">Harakatlar</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'batch_list' %}" class="nav-link text-white">Partiyalar</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-10">
+        <h2 class="mt-3 animate__animated animate__fadeInDown">Yangi Harakat Qo'shish</h2>
+        <form method="post" class="animate__animated animate__fadeInUp">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Saqlash</button>
+            <a href="{% url 'movement_list' %}" class="btn btn-secondary">Bekor qilish</a>
+        </form>
+    </div>
+</div>
+{% endblock content %}
