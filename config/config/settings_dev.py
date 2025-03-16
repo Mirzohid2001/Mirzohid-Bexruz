@@ -5,7 +5,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'neft-baza-2',
         'USER': 'postgres',
-        'PASSWORD': '20010508',
+        'PASSWORD': '41552145',
         'HOST': 'localhost',
         'PORT': 5432,
     }
