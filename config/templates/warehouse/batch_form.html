@@ -1,0 +1,26 @@
+{% extends 'warehouse/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-2 bg-dark sidebar vh-100">
+        <div class="sidebar-sticky text-white py-3">
+            <h5>Омборхона меню</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'warehouse:batch_list' %}" class="nav-link text-white">Partiyalar</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <h2 class="mt-3">Yangi Partiya Qo'shish yoki Tahrirlash</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Saqlash</button>
+            <a href="{% url 'warehouse:batch_list' %}" class="btn btn-secondary">Bekor qilish</a>
+        </form>
+    </div>
+</div>
+{% endblock content %}

@@ -186,7 +186,6 @@ class BatchUpdateView(UpdateView):
     model = Batch
     form_class = BatchForm
     template_name = 'warehouse/batch_form.html'
-
     def get_success_url(self):
         return reverse('warehouse:batch_list')
 
@@ -202,7 +201,6 @@ def movement_create(request):
     return render(request, 'warehouse/movement_create.html', {'form': form})
 
 
-# Excel eksport view'lari
 
 def export_products_excel(request):
     qs = Product.objects.all().values(

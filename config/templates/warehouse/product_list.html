@@ -61,8 +61,8 @@
                     <td>{{ product.out_qty }}</td>
                     <td>{{ product.net_quantity }}</td>
                     <td>
-                        <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm btn-info">Detal</a>
-                        <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-warning">Tahrirlash</a>
+                        <a href="{% url 'warehouse:product_detail' product.pk %}" class="btn btn-sm btn-info">Detal</a>
+                        <a href="{% url 'warehouse:product_update' product.pk %}" class="btn btn-sm btn-warning">Tahrirlash</a>
                     </td>
                 </tr>
             {% empty %}
@@ -72,7 +72,7 @@
             {% endfor %}
             </tbody>
         </table>
-        <a href="{% url 'product_create' %}" class="btn btn-success mt-3 animate__animated animate__bounceIn">Yangi mahsulot qo'shish</a>
+        <a href="{% url 'warehouse:product_create' %}" class="btn btn-success mt-3 animate__animated animate__bounceIn">Yangi mahsulot qo'shish</a>
     </div>
 </div>
 {% endblock content %}

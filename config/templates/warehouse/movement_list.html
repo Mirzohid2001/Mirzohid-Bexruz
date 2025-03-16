@@ -8,13 +8,13 @@
             <h5>Омборхона меню</h5>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="{% url 'dashboard' %}" class="nav-link text-white">Dashboard</a>
+                    <a href="{% url 'warehouse:dashboard' %}" class="nav-link text-white">Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'movement_list' %}" class="nav-link text-white">Harakatlar</a>
+                    <a href="{% url 'warehouse:movement_list' %}" class="nav-link text-white">Harakatlar</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'batch_list' %}" class="nav-link text-white">Partiyalar</a>
+                    <a href="{% url 'warehouse:batch_list' %}" class="nav-link text-white">Partiyalar</a>
                 </li>
             </ul>
         </div>
@@ -79,7 +79,7 @@
             {% endfor %}
             </tbody>
         </table>
-        <a hrefmovement_create' %}" class="btn btn-success mt-3 animate__animated animate__bounceIn">Yangi Harakat Qo'shish</a>
+        <a href="{% url 'warehouse:movement_create' %}" class="btn btn-success mt-3 animate__animated animate__bounceIn">Yangi Harakat Qo'shish</a>
     </div>
 </div>
 {% endblock content %}
