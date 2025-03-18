@@ -1,5 +1,5 @@
 from django import forms
-from .models import Movement, Product, Wagon, Batch
+from .models import Movement, Product, Wagon, Batch, Reservoir, ReservoirMovement
 
 class MovementForm(forms.ModelForm):
     date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
@@ -59,4 +59,28 @@ class BatchForm(forms.ModelForm):
         widgets = {
             'product': forms.Select(attrs={'class': 'form-select'}),
             'batch_number': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+class ReservoirForm(forms.ModelForm):
+    class Meta:
+        model = Reservoir
+        fields = ['warehouse', 'name', 'capacity', 'product']
+        widgets = {
+            'warehouse': forms.Select(attrs={'class': 'form-select'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'capacity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'product': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+class ReservoirMovementForm(forms.ModelForm):
+    class Meta:
+        model = ReservoirMovement
+        fields = ['reservoir', 'product', 'date', 'movement_type', 'quantity', 'note']
+        widgets = {
+            'reservoir': forms.Select(attrs={'class': 'form-select'}),
+            'product': forms.Select(attrs={'class': 'form-select'}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'movement_type': forms.Select(attrs={'class': 'form-select'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }

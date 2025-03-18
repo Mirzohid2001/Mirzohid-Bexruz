@@ -2,19 +2,21 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-2 bg-dark sidebar animate__animated animate__fadeInLeft">
+    <!-- Sidebar -->
+    <div class="col-md-2 sidebar vh-100 animate__animated animate__fadeInLeft">
         <div class="sidebar-sticky text-white py-4">
-            <h5>Омборхона меню</h5>
+            <h5 class="px-3">Меню</h5>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="{% url 'warehouse:dashboard' %}" class="nav-link text-white">Dashboard</a>
+                    <a href="{% url 'warehouse:dashboard' %}" class="nav-link text-white"><i class="bi bi-house-door-fill me-1"></i> Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'warehouse:batch_list' %}" class="nav-link text-white">Partiyalar</a>
+                    <a href="{% url 'warehouse:batch_list' %}" class="nav-link text-white"><i class="bi bi-archive-fill me-1"></i> Partiyalar</a>
                 </li>
             </ul>
         </div>
     </div>
+    <!-- Main Content -->
     <div class="col-md-10">
         <h2 class="mt-3 animate__animated animate__fadeInDown">Partiyalar ro'yxati</h2>
         <table class="table table-bordered table-hover animate__animated animate__fadeInUp">
@@ -41,8 +43,8 @@
                     <td>{{ batch.out_qty }}</td>
                     <td>{{ batch.quantity }}</td>
                     <td>
-                        <a href="{% url 'batch_detail' batch.pk %}" class="btn btn-sm btn-info">Detal</a>
-                        <a href="{% url 'batch_update' batch.pk %}" class="btn btn-sm btn-warning">Tahrirlash</a>
+                        <a href="{% url 'warehouse:batch_detail' batch.pk %}" class="btn btn-sm btn-info">Detal</a>
+                        <a href="{% url 'warehouse:batch_update' batch.pk %}" class="btn btn-sm btn-warning">Tahrirlash</a>
                     </td>
                 </tr>
             {% empty %}

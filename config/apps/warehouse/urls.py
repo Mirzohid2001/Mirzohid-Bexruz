@@ -5,7 +5,8 @@ from .views import (
     WagonListView, MovementListView, InventoryListView,
     movement_create,
     BatchListView, BatchDetailView, BatchCreateView, BatchUpdateView,
-    export_products_excel, export_movements_excel, export_wagons_excel
+    export_products_excel, export_movements_excel, export_wagons_excel ,ReservoirCreateView, ReservoirListView, ReservoirDetailView, 
+    ReservoirUpdateView,ReservoirMovementListView, ReservoirMovementCreateView
 )
 
 app_name = 'warehouse'
@@ -29,4 +30,10 @@ urlpatterns = [
     path('export/products/excel/', export_products_excel, name='export_products_excel'),
     path('export/movements/excel/', export_movements_excel, name='export_movements_excel'),
     path('export/wagons/excel/', export_wagons_excel, name='export_wagons_excel'),
+    path('reservoirs/', ReservoirListView.as_view(), name='reservoir_list'),
+    path('reservoirs/create/', ReservoirCreateView.as_view(), name='reservoir_create'),
+    path('reservoirs/<int:pk>/', ReservoirDetailView.as_view(), name='reservoir_detail'),
+    path('reservoirs/<int:pk>/update/', ReservoirUpdateView.as_view(), name='reservoir_update'),
+    path('reservoir-movements/', ReservoirMovementListView.as_view(), name='reservoir_movement_list'),
+    path('reservoir-movements/create/', ReservoirMovementCreateView.as_view(), name='reservoir_movement_create'),
 ]

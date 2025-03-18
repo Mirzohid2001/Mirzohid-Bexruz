@@ -5,22 +5,30 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView
-from .models import Product, Wagon, Movement, Inventory, Batch
-from .forms import MovementForm, ProductForm, WagonForm, BatchForm
-from .filters import MovementFilter, ProductFilter, WagonFilter
+from .models import (
+    Product, Wagon, Movement, Inventory, Batch, 
+    Reservoir, ReservoirMovement
+)
+from .forms import (
+    MovementForm, ProductForm, WagonForm, BatchForm,
+    ReservoirForm, ReservoirMovementForm
+)
+from .filters import (
+    MovementFilter, ProductFilter, WagonFilter, 
+    ReservoirFilter, ReservoirMovementFilter
+)
 
+# Index View
 def index(request):
     return render(request, 'warehouse/index.html')
 
-
+# Dashboard View
 def dashboard(request):
     total_in = Movement.objects.filter(movement_type='in').aggregate(total=Sum('quantity'))['total'] or 0
     total_out = Movement.objects.filter(movement_type='out').aggregate(total=Sum('quantity'))['total'] or 0
     net_movement = total_in - total_out
-
     inventory_summary = Inventory.objects.select_related('product').all()
     product_aggregates = Product.objects.annotate(net_qty=F('in_qty') - F('out_qty'))
-
     context = {
         'total_in': total_in,
         'total_out': total_out,
@@ -48,7 +56,7 @@ class MovementReportView(TemplateView):
         })
         return context
 
-
+# Product Views
 class ProductListView(ListView):
     model = Product
     template_name = 'warehouse/product_list.html'
@@ -64,7 +72,6 @@ class ProductListView(ListView):
         context = super().get_context_data(**kwargs)
         context['filter'] = self.filter
         return context
-
 
 class ProductDetailView(DetailView):
     model = Product
@@ -86,7 +93,6 @@ class ProductDetailView(DetailView):
         })
         return context
 
-
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
@@ -94,7 +100,6 @@ class ProductCreateView(CreateView):
 
     def get_success_url(self):
         return reverse('warehouse:product_list')
-
 
 class ProductUpdateView(UpdateView):
     model = Product
@@ -104,7 +109,7 @@ class ProductUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('warehouse:product_list')
 
-
+# Wagon Views
 class WagonListView(ListView):
     model = Wagon
     template_name = 'warehouse/wagon_list.html'
@@ -121,7 +126,7 @@ class WagonListView(ListView):
         context['filter'] = self.filter
         return context
 
-
+# Movement Views
 class MovementListView(ListView):
     model = Movement
     template_name = 'warehouse/movement_list.html'
@@ -138,19 +143,28 @@ class MovementListView(ListView):
         context['filter'] = self.filter
         return context
 
+def movement_create(request):
+    if request.method == 'POST':
+        form = MovementForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('warehouse:movement_list'))
+    else:
+        form = MovementForm()
+    return render(request, 'warehouse/movement_create.html', {'form': form})
 
+# Inventory View
 class InventoryListView(ListView):
     model = Inventory
     template_name = 'warehouse/inventory_list.html'
     context_object_name = 'inventory'
 
-
+# Batch Views
 class BatchListView(ListView):
     model = Batch
     template_name = 'warehouse/batch_list.html'
     context_object_name = 'batches'
     ordering = ['-id']
-
 
 class BatchDetailView(DetailView):
     model = Batch
@@ -172,7 +186,6 @@ class BatchDetailView(DetailView):
         })
         return context
 
-
 class BatchCreateView(CreateView):
     model = Batch
     form_class = BatchForm
@@ -181,27 +194,15 @@ class BatchCreateView(CreateView):
     def get_success_url(self):
         return reverse('warehouse:batch_list')
 
-
 class BatchUpdateView(UpdateView):
     model = Batch
     form_class = BatchForm
     template_name = 'warehouse/batch_form.html'
+
     def get_success_url(self):
         return reverse('warehouse:batch_list')
 
-
-def movement_create(request):
-    if request.method == 'POST':
-        form = MovementForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('warehouse:movement_list'))
-    else:
-        form = MovementForm()
-    return render(request, 'warehouse/movement_create.html', {'form': form})
-
-
-
+# Excel Export Views
 def export_products_excel(request):
     qs = Product.objects.all().values(
         'code', 'name', 'category', 'volume', 'weight', 
@@ -231,7 +232,6 @@ def export_products_excel(request):
     response['Content-Disposition'] = 'attachment; filename="products.xlsx"'
     return response
 
-
 def export_movements_excel(request):
     qs = Movement.objects.select_related('product', 'wagon').all().values(
         'document_number', 'product__name', 'wagon__wagon_number', 
@@ -260,7 +260,6 @@ def export_movements_excel(request):
     response['Content-Disposition'] = 'attachment; filename="movements.xlsx"'
     return response
 
-
 def export_wagons_excel(request):
     qs = Wagon.objects.all().values(
         'wagon_number', 'wagon_type', 'net_weight', 'meter_weight',
@@ -288,3 +287,79 @@ def export_wagons_excel(request):
     )
     response['Content-Disposition'] = 'attachment; filename="wagons.xlsx"'
     return response
+
+# Reservoir Views
+class ReservoirListView(ListView):
+    model = Reservoir
+    template_name = 'warehouse/reservoir_list.html'
+    context_object_name = 'reservoirs'
+    ordering = ['name']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        self.filter = ReservoirFilter(self.request.GET, queryset=qs)
+        return self.filter.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if hasattr(self, 'filter'):
+            context['filter'] = self.filter
+        return context
+
+class ReservoirDetailView(DetailView):
+    model = Reservoir
+    template_name = 'warehouse/reservoir_detail.html'
+    context_object_name = 'reservoir'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        reservoir = self.get_object()
+        movements = ReservoirMovement.objects.filter(reservoir=reservoir).order_by('-date')
+        total_in = movements.filter(movement_type='in').aggregate(Sum('quantity'))['quantity__sum'] or 0
+        total_out = movements.filter(movement_type='out').aggregate(Sum('quantity'))['quantity__sum'] or 0
+        net_qty = total_in - total_out
+        context['movements'] = movements
+        context['total_in'] = total_in
+        context['total_out'] = total_out
+        context['net_qty'] = net_qty
+        return context
+
+class ReservoirCreateView(CreateView):
+    model = Reservoir
+    form_class = ReservoirForm
+    template_name = 'warehouse/reservoir_form.html'
+
+    def get_success_url(self):
+        return reverse('warehouse:reservoir_list')
+
+class ReservoirUpdateView(UpdateView):
+    model = Reservoir
+    form_class = ReservoirForm
+    template_name = 'warehouse/reservoir_form.html'
+
+    def get_success_url(self):
+        return reverse('warehouse:reservoir_list')
+
+class ReservoirMovementListView(ListView):
+    model = ReservoirMovement
+    template_name = 'warehouse/reservoir_movement_list.html'
+    context_object_name = 'movements'
+    ordering = ['-date']
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('reservoir', 'product')
+        self.filter = ReservoirMovementFilter(self.request.GET, queryset=qs)
+        return self.filter.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filter
+        return context
+
+class ReservoirMovementCreateView(CreateView):
+    model = ReservoirMovement
+    form_class = ReservoirMovementForm
+    template_name = 'warehouse/reservoir_movement_form.html'
+
+    def get_success_url(self):
+        return reverse('warehouse:reservoir_movement_list')
