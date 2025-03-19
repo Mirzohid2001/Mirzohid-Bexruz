@@ -3,13 +3,21 @@ from django.db.models import Sum
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from apps.warehouse.utils import send_telegram_message
+
+
 class Warehouse(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ombor nomi")
     location = models.CharField(max_length=200, verbose_name="Manzil", blank=True, null=True)
+    zone = models.CharField(max_length=50, verbose_name="Zona", blank=True, null=True)
+    location_code = models.CharField(max_length=20, verbose_name="Location Code", blank=True, null=True)
     description = models.TextField(verbose_name="Tavsif", blank=True, null=True)
-
+    
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = "склад"
+        verbose_name_plural = "склады"
 
 
 class Product(models.Model):
@@ -27,6 +35,7 @@ class Product(models.Model):
     warehouse = models.ForeignKey('Warehouse', on_delete=models.CASCADE, verbose_name="Ombor", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Yangilangan sana")
+    zone = models.CharField(max_length=50, verbose_name="Zona", blank=True, null=True)
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -46,6 +55,8 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['code']
+        verbose_name = "продукт"
+        verbose_name_plural = "продукты"
 
 
 class Batch(models.Model):
@@ -85,6 +96,8 @@ class Wagon(models.Model):
 
     class Meta:
         ordering = ['wagon_number']
+        verbose_name = "Вагон"
+        verbose_name_plural = "Вагонлар"
 
 
 class Movement(models.Model):
@@ -101,31 +114,31 @@ class Movement(models.Model):
     quantity = models.FloatField(verbose_name="Miqdor (qty)")
     price_sum = models.FloatField(verbose_name="Narx (so'm)", default=0)
     note = models.TextField(verbose_name="Izoh", blank=True, null=True)
-    movement_type = models.CharField(max_length=3, choices=MOVEMENT_TYPES, verbose_name="Harakat turi")
-    quantity = models.FloatField(verbose_name="Miqdor (qty)")
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, verbose_name="Ombor", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
 
     def __str__(self):
         return f"{self.date} - {self.product.name} - {self.get_movement_type_display()} - {self.quantity}"
-    
+
     def clean(self):
         if self.movement_type == 'out':
-            available = self.product.in_qty - self.product.out_qty
+            available = self.product.net_quantity()
             if self.quantity > available:
                 raise ValidationError(
                     f"Mavjud qoldiq ({available}) dan oshiq chiqim kiritish mumkin emas!"
                 )
 
     def save(self, *args, **kwargs):
+
+        self.full_clean()
         super().save(*args, **kwargs)
+
         product_obj = self.product
         all_in = Movement.objects.filter(product=product_obj, movement_type='in').aggregate(total=Sum('quantity'))['total'] or 0
         all_out = Movement.objects.filter(product=product_obj, movement_type='out').aggregate(total=Sum('quantity'))['total'] or 0
         product_obj.in_qty = all_in
         product_obj.out_qty = all_out
         product_obj.save()
-
 
         if self.batch:
             batch_obj = self.batch
@@ -144,6 +157,8 @@ class Movement(models.Model):
 
     class Meta:
         ordering = ['-date']
+        verbose_name = "Движение"
+        verbose_name_plural = "Движения"
 
 
 class Inventory(models.Model):
@@ -152,6 +167,10 @@ class Inventory(models.Model):
 
     def __str__(self):
         return f"{self.product.name} qoldiq: {self.quantity}"
+    
+    class Meta:
+        verbose_name = "Инвентарь"
+        verbose_name_plural = "Инвентарь"
     
 class Reservoir(models.Model):
     warehouse = models.ForeignKey(
@@ -171,6 +190,10 @@ class Reservoir(models.Model):
 
     def __str__(self):
         return f"{self.name} (Qoldiq: {self.quantity})"
+    
+    class Meta:
+        verbose_name = "Rezervuar"
+        verbose_name_plural = "Rezervuarlar"
 
 
 class ReservoirMovement(models.Model):
@@ -222,6 +245,10 @@ class ReservoirMovement(models.Model):
         res.quantity = total_in - total_out
         res.save()
 
+    class Meta:
+        verbose_name = "Rezervuar harakati"
+        verbose_name_plural = "Rezervuar harakatlari"
+
 
 class AuditLog(models.Model):
     action = models.CharField(max_length=20)
@@ -232,3 +259,7 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.model_name} [{self.object_id}] {self.action} at {self.timestamp}"
+    
+    class Meta:
+        verbose_name = "Audit log"
+        verbose_name_plural = "Audit logs"

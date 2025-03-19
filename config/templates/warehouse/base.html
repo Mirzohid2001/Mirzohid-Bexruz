@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <title>Neft Platformasi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
     <style>
-        body { background-color: #f8f9fa; }
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
         .sidebar {
-            background: linear-gradient(45deg, #343a40, #212529);
-            transition: all 0.3s ease;
+            background-color: #343a40;
+            min-height: 100vh;
         }
         .sidebar .nav-link {
             color: #fff;
@@ -21,14 +28,12 @@
             padding-left: 1rem;
             border-radius: 4px;
         }
-        .card:hover {
-            transform: scale(1.02);
-            transition: transform 0.3s ease;
-        }
     </style>
+
     {% block extra_css %}{% endblock extra_css %}
 </head>
 <body>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark animate__animated animate__fadeInDown">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'warehouse:dashboard' %}">
@@ -39,24 +44,112 @@
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+           
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'warehouse:product_list' %}"><i class="bi bi-bag-fill me-1"></i> Mahsulotlar</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'warehouse:movement_list' %}"><i class="bi bi-arrow-left-right me-1"></i> Harakatlar</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'warehouse:reservoir_list' %}"><i class="bi bi-droplet-fill me-1"></i> Rezervuarlar</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'warehouse:batch_list' %}"><i class="bi bi-archive-fill me-1"></i> Partiyalar</a></li>
-                    
+              
                 </ul>
             </div>
         </div>
     </nav>
+
     
-    <div class="container-fluid mt-4">
-        {% block content %}
-        {% endblock content %}
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar (col-2) -->
+            <div class="col-2 sidebar">
+                <div class="py-4">
+                    <h5 class="px-3 text-white">Меню</h5>
+                    <ul class="nav flex-column">
+                 
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:dashboard' %}" class="nav-link text-white">
+                                <i class="bi bi-house-door-fill me-2"></i> Dashboard
+                            </a>
+                        </li>
+                       
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:product_list' %}" class="nav-link text-white">
+                                <i class="bi bi-bag-fill me-2"></i> Mahsulotlar
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:product_create' %}" class="nav-link text-white">
+                                <i class="bi bi-plus-circle me-2"></i> Yangi Mahsulot
+                            </a>
+                        </li>
+               
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:movement_list' %}" class="nav-link text-white">
+                                <i class="bi bi-arrow-left-right me-2"></i> Harakatlar
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:movement_report' %}" class="nav-link text-white">
+                                <i class="bi bi-file-earmark-text me-2"></i> Harakat Hisobot
+                            </a>
+                        </li>
+          
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:wagon_list' %}" class="nav-link text-white">
+                                <i class="bi bi-truck me-2"></i> Vagonlar
+                            </a>
+                        </li>
+                  
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:inventory_list' %}" class="nav-link text-white">
+                                <i class="bi bi-box-seam me-2"></i> Ombor Qoldiq
+                            </a>
+                        </li>
+                  
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:batch_list' %}" class="nav-link text-white">
+                                <i class="bi bi-archive-fill me-2"></i> Partiyalar
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:batch_create' %}" class="nav-link text-white">
+                                <i class="bi bi-plus-circle me-2"></i> Yangi Partiya
+                            </a>
+                        </li>
+                   
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:reservoir_list' %}" class="nav-link text-white">
+                                <i class="bi bi-droplet-fill me-2"></i> Rezervuarlar
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:reservoir_create' %}" class="nav-link text-white">
+                                <i class="bi bi-plus-circle me-2"></i> Yangi Rezervuar
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:reservoir_movement_list' %}" class="nav-link text-white">
+                                <i class="bi bi-arrow-left-right me-2"></i> Rezervuar Harakatlari
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:reservoir_movement_create' %}" class="nav-link text-white">
+                                <i class="bi bi-plus-circle me-2"></i> Yangi Rezervuar Harakati
+                            </a>
+                        </li>
+                
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'warehouse:warehouse_report' %}" class="nav-link text-white">
+                                <i class="bi bi-bar-chart-fill me-2"></i> Ombor Hisoboti
+                            </a>
+                        </li>
+                    
+                    </ul>
+                </div>
+            </div>
+            <div class="col-10">
+                {% block content %}
+                {% endblock content %}
+            </div>
+        </div>
     </div>
-    
-    <!-- Bootstrap JS Bundle -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock extra_js %}
 </body>

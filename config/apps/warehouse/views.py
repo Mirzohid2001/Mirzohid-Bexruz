@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView
 from .models import (
     Product, Wagon, Movement, Inventory, Batch, 
-    Reservoir, ReservoirMovement
+    Reservoir, ReservoirMovement,Warehouse
 )
 from .forms import (
     MovementForm, ProductForm, WagonForm, BatchForm,
@@ -17,18 +17,26 @@ from .filters import (
     MovementFilter, ProductFilter, WagonFilter, 
     ReservoirFilter, ReservoirMovementFilter
 )
+import json
+from django.db import models
 
-# Index View
 def index(request):
     return render(request, 'warehouse/index.html')
 
-# Dashboard View
 def dashboard(request):
     total_in = Movement.objects.filter(movement_type='in').aggregate(total=Sum('quantity'))['total'] or 0
+    print(total_in)
     total_out = Movement.objects.filter(movement_type='out').aggregate(total=Sum('quantity'))['total'] or 0
+    print(total_out)
     net_movement = total_in - total_out
+
     inventory_summary = Inventory.objects.select_related('product').all()
-    product_aggregates = Product.objects.annotate(net_qty=F('in_qty') - F('out_qty'))
+
+    product_aggregates = Product.objects.annotate(
+        net_qty=(Sum('movement__quantity', filter=models.Q(movement__movement_type='in')) 
+                 - Sum('movement__quantity', filter=models.Q(movement__movement_type='out')))
+    )
+
     context = {
         'total_in': total_in,
         'total_out': total_out,
@@ -56,7 +64,6 @@ class MovementReportView(TemplateView):
         })
         return context
 
-# Product Views
 class ProductListView(ListView):
     model = Product
     template_name = 'warehouse/product_list.html'
@@ -108,8 +115,26 @@ class ProductUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse('warehouse:product_list')
+    
+class WarehouseReportView(TemplateView):
+    template_name = 'warehouse/warehouse_report.html'
 
-# Wagon Views
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        warehouses = Warehouse.objects.all()
+        warehouse_data = []
+        for wh in warehouses:
+            products = Product.objects.filter(warehouse=wh)
+            total_qty = sum([p.net_quantity() for p in products])
+            warehouse_data.append({
+                'name': wh.name,
+                'zone': wh.zone,
+                'total_qty': total_qty,
+            })
+        # JSON ga aylantirish
+        context['warehouse_data_json'] = json.dumps(warehouse_data)
+        return context
+
 class WagonListView(ListView):
     model = Wagon
     template_name = 'warehouse/wagon_list.html'
@@ -126,7 +151,6 @@ class WagonListView(ListView):
         context['filter'] = self.filter
         return context
 
-# Movement Views
 class MovementListView(ListView):
     model = Movement
     template_name = 'warehouse/movement_list.html'
@@ -153,13 +177,11 @@ def movement_create(request):
         form = MovementForm()
     return render(request, 'warehouse/movement_create.html', {'form': form})
 
-# Inventory View
 class InventoryListView(ListView):
     model = Inventory
     template_name = 'warehouse/inventory_list.html'
     context_object_name = 'inventory'
 
-# Batch Views
 class BatchListView(ListView):
     model = Batch
     template_name = 'warehouse/batch_list.html'
@@ -201,11 +223,9 @@ class BatchUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse('warehouse:batch_list')
-
-# Excel Export Views
 def export_products_excel(request):
     qs = Product.objects.all().values(
-        'code', 'name', 'category', 'volume', 'weight', 
+        'code', 'name', 'category', 'volume', 'weight',
         'price_usd', 'price_sum', 'in_qty', 'out_qty'
     )
     df = pd.DataFrame(list(qs))
@@ -220,21 +240,25 @@ def export_products_excel(request):
         'in_qty': "Umumiy kirim",
         'out_qty': "Umumiy chiqim",
     }, inplace=True)
+
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     df.to_excel(writer, index=False, sheet_name='Products')
-    writer.save()
+
+    writer.close()
     output.seek(0)
+
     response = HttpResponse(
-        output.read(), 
+        output.read(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     response['Content-Disposition'] = 'attachment; filename="products.xlsx"'
     return response
 
+
 def export_movements_excel(request):
     qs = Movement.objects.select_related('product', 'wagon').all().values(
-        'document_number', 'product__name', 'wagon__wagon_number', 
+        'document_number', 'product__name', 'wagon__wagon_number',
         'date', 'movement_type', 'quantity', 'price_sum', 'note'
     )
     df = pd.DataFrame(list(qs))
@@ -248,17 +272,21 @@ def export_movements_excel(request):
         'price_sum': "Narx (so'm)",
         'note': 'Izoh',
     }, inplace=True)
+
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     df.to_excel(writer, index=False, sheet_name='Movements')
-    writer.save()
+
+    writer.close()
     output.seek(0)
+
     response = HttpResponse(
         output.read(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     response['Content-Disposition'] = 'attachment; filename="movements.xlsx"'
     return response
+
 
 def export_wagons_excel(request):
     qs = Wagon.objects.all().values(
@@ -276,11 +304,14 @@ def export_wagons_excel(request):
         'price_sum': "Umumiy summa (so'm)",
         'condition': "Holati",
     }, inplace=True)
+
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     df.to_excel(writer, index=False, sheet_name='Wagons')
-    writer.save()
+
+    writer.close()
     output.seek(0)
+
     response = HttpResponse(
         output.read(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -288,7 +319,6 @@ def export_wagons_excel(request):
     response['Content-Disposition'] = 'attachment; filename="wagons.xlsx"'
     return response
 
-# Reservoir Views
 class ReservoirListView(ListView):
     model = Reservoir
     template_name = 'warehouse/reservoir_list.html'

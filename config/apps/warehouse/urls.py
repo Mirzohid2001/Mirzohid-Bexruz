@@ -6,7 +6,7 @@ from .views import (
     movement_create,
     BatchListView, BatchDetailView, BatchCreateView, BatchUpdateView,
     export_products_excel, export_movements_excel, export_wagons_excel ,ReservoirCreateView, ReservoirListView, ReservoirDetailView, 
-    ReservoirUpdateView,ReservoirMovementListView, ReservoirMovementCreateView
+    ReservoirUpdateView,ReservoirMovementListView, ReservoirMovementCreateView,WarehouseReportView
 )
 
 app_name = 'warehouse'
@@ -36,4 +36,5 @@ urlpatterns = [
     path('reservoirs/<int:pk>/update/', ReservoirUpdateView.as_view(), name='reservoir_update'),
     path('reservoir-movements/', ReservoirMovementListView.as_view(), name='reservoir_movement_list'),
     path('reservoir-movements/create/', ReservoirMovementCreateView.as_view(), name='reservoir_movement_create'),
+    path('warehouse-report/', WarehouseReportView.as_view(), name='warehouse_report'),
 ]
