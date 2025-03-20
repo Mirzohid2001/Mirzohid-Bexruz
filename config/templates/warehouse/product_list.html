@@ -33,6 +33,10 @@
                     <th>Kod</th>
                     <th>Nomi</th>
                     <th>Kategoriya</th>
+                    <th>Zichlik</th>
+                    <th>Litr</th>
+                    <th>Udel og‘irlik</th>
+                    <th>Og‘irlik (kg)</th>
                     <th>Kirim</th>
                     <th>Chiqim</th>
                     <th>Net</th>
@@ -46,6 +50,10 @@
                     <td>{{ product.code }}</td>
                     <td>{{ product.name }}</td>
                     <td>{{ product.category }}</td>
+                    <td>{{ product.density }}</td>
+                    <td>{{ product.liter }}</td>
+                    <td>{{ product.specific_weight }}</td>
+                    <td>{{ product.weight }}</td>
                     <td>{{ product.in_qty }}</td>
                     <td>{{ product.out_qty }}</td>
                     <td>{{ product.net_quantity }}</td>
@@ -56,11 +64,11 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center">Ma'lumot topilmadi</td>
+                    <td colspan="12" class="text-center">Ma'lumot topilmadi</td>
                 </tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table>        
     </div>
 </div>
 {% endblock content %}

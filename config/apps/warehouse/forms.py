@@ -1,19 +1,22 @@
 from django import forms
-from .models import Movement, Product, Wagon, Batch, Reservoir, ReservoirMovement
+from .models import Movement, Product, Wagon, Batch, Reservoir, ReservoirMovement,LocalClient, LocalMovement
 
 class MovementForm(forms.ModelForm):
     date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    
+    density = forms.FloatField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'id':'id_density'}))
+    liter = forms.FloatField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'id':'id_liter'}))
+    specific_weight = forms.FloatField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'id':'id_specific_weight'}))
+    quantity = forms.FloatField(widget=forms.NumberInput(attrs={'class': 'form-control', 'id':'id_quantity'}))
+
     class Meta:
         model = Movement
-        fields = ['document_number', 'product', 'batch', 'wagon', 'date', 'movement_type', 'quantity', 'price_sum', 'note']
+        fields = ['document_number', 'product', 'batch', 'wagon', 'date', 'movement_type', 'density', 'liter', 'specific_weight', 'quantity', 'price_sum', 'note']
         widgets = {
             'document_number': forms.TextInput(attrs={'class': 'form-control'}),
             'product': forms.Select(attrs={'class': 'form-select'}),
             'batch': forms.Select(attrs={'class': 'form-select'}),
             'wagon': forms.Select(attrs={'class': 'form-select'}),
             'movement_type': forms.Select(attrs={'class': 'form-select'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
             'price_sum': forms.NumberInput(attrs={'class': 'form-control'}),
             'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
@@ -28,10 +31,6 @@ class ProductForm(forms.ModelForm):
             'category': forms.TextInput(attrs={'class': 'form-control'}),
             'volume': forms.NumberInput(attrs={'class': 'form-control'}),
             'weight': forms.NumberInput(attrs={'class': 'form-control'}),
-            'price_usd': forms.NumberInput(attrs={'class': 'form-control'}),
-            'price_sum': forms.NumberInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'warehouse': forms.Select(attrs={'class': 'form-select'}),
         }
 
 class WagonForm(forms.ModelForm):
@@ -82,5 +81,31 @@ class ReservoirMovementForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'movement_type': forms.Select(attrs={'class': 'form-select'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+
+class LocalClientForm(forms.ModelForm):
+    class Meta:
+        model = LocalClient
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+class LocalMovementForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = LocalMovement
+        fields = ['client', 'wagon', 'product', 'date', 'density', 'temperature', 'liter', 'mass', 'note']
+        widgets = {
+            'client': forms.Select(attrs={'class': 'form-select'}),
+            'wagon': forms.Select(attrs={'class': 'form-select'}),
+            'product': forms.Select(attrs={'class': 'form-select'}),
+            'density': forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_density'}),
+            'temperature': forms.NumberInput(attrs={'class': 'form-control'}),
+            'liter': forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_liter'}),
+            'mass': forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_mass', 'readonly': 'readonly'}),
             'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }

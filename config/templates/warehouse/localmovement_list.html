@@ -1,0 +1,35 @@
+{% extends 'warehouse/base.html' %}
+{% block content %}
+<h2>Mahalliy harakatlar ro'yxati</h2>
+<a href="{% url 'warehouse:localmovement_create' %}" class="btn btn-primary">Yangi harakat qo'shish</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Sana</th>
+            <th>Klient</th>
+            <th>Mahsulot</th>
+            <th>Vagon</th>
+            <th>Zichlik</th>
+            <th>Litr</th>
+            <th>Massa (kg)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movement in local_movements %}
+        <tr>
+            <td>{{ movement.date }}</td>
+            <td>{{ movement.client.name }}</td>
+            <td>{{ movement.product.name }}</td>
+            <td>{{ movement.wagon.wagon_number }}</td>
+            <td>{{ movement.density }}</td>
+            <td>{{ movement.liter }}</td>
+            <td>{{ movement.mass }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">Harakatlar mavjud emas</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

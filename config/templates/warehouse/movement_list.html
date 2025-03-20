@@ -34,7 +34,10 @@
                     <th>Mahsulot</th>
                     <th>Vagon</th>
                     <th>Harakat turi</th>
-                    <th>Miqdor</th>
+                    <th>Zichlik</th>
+                    <th>Litr</th>
+                    <th>Udel og‘irlik</th>
+                    <th>Massa (kg)</th>
                     <th>Narx</th>
                     <th>Izoh</th>
                 </tr>
@@ -47,17 +50,21 @@
                     <td>{{ mv.product.name }}</td>
                     <td>{% if mv.wagon %}{{ mv.wagon.wagon_number }}{% else %}-{% endif %}</td>
                     <td>{{ mv.get_movement_type_display }}</td>
+                    <td>{{ mv.density }}</td>
+                    <td>{{ mv.liter }}</td>
+                    <td>{{ mv.specific_weight }}</td>
                     <td>{{ mv.quantity }}</td>
                     <td>{{ mv.price_sum }}</td>
                     <td>{{ mv.note }}</td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center">Ma'lumot topilmadi</td>
+                    <td colspan="11" class="text-center">Ma'lumot topilmadi</td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+        
     </div>
 </div>
 {% endblock content %}

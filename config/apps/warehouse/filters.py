@@ -2,23 +2,20 @@ import django_filters
 from .models import Movement, Product, Wagon , Reservoir, ReservoirMovement
 
 class MovementFilter(django_filters.FilterSet):
-    date = django_filters.DateFromToRangeFilter(field_name="date", label="Sana oralig'i")
-    product = django_filters.CharFilter(field_name="product__name", lookup_expr='icontains', label="Mahsulot nomi")
-    wagon = django_filters.CharFilter(field_name="wagon__wagon_number", lookup_expr='icontains', label="Vagon raqami")
-    movement_type = django_filters.ChoiceFilter(choices=Movement.MOVEMENT_TYPES, label="Harakat turi")
+    date = django_filters.DateFromToRangeFilter()
+    product = django_filters.CharFilter(lookup_expr='icontains')
+    movement_type = django_filters.ChoiceFilter(choices=Movement.MOVEMENT_TYPES)
 
     class Meta:
         model = Movement
-        fields = ['date', 'product', 'wagon', 'movement_type']
-
+        fields = ['date', 'product', 'movement_type', 'warehouse']
 
 class ProductFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(field_name="name", lookup_expr='icontains', label="Mahsulot nomi")
-    category = django_filters.CharFilter(field_name="category", lookup_expr='icontains', label="Kategoriya")
+    name = django_filters.CharFilter(lookup_expr='icontains')
 
     class Meta:
         model = Product
-        fields = ['name', 'category']
+        fields = ['name', 'category', 'warehouse']
 
 
 class WagonFilter(django_filters.FilterSet):

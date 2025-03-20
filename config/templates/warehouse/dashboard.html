@@ -40,6 +40,22 @@
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="card text-bg-warning mb-3 dashboard-card animate__animated animate__zoomIn">
+            <div class="card-body">
+                <h5 class="card-title">Mahalliy Klientlar</h5>
+                <p class="card-text display-6">{{ total_local_clients }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-info mb-3 dashboard-card animate__animated animate__zoomIn">
+            <div class="card-body">
+                <h5 class="card-title">Mahalliy Harakatlar</h5>
+                <p class="card-text display-6">{{ total_local_movements }}</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="card dashboard-card animate__animated animate__fadeInUp">
@@ -51,6 +67,10 @@
             <thead class="table-dark">
                 <tr>
                     <th>Mahsulot</th>
+                    <th>Zichlik</th>
+                    <th>Litr</th>
+                    <th>Udel og‘irlik</th>
+                    <th>Massa (kg)</th>
                     <th>Qoldiq (qty)</th>
                 </tr>
             </thead>
@@ -58,17 +78,22 @@
                 {% for inv in inventory_summary %}
                 <tr>
                     <td>{{ inv.product.name }}</td>
+                    <td>{{ inv.product.density }}</td>
+                    <td>{{ inv.product.liter }}</td>
+                    <td>{{ inv.product.specific_weight }}</td>
+                    <td>{{ inv.product.weight }}</td>
                     <td>{{ inv.quantity }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="2" class="text-center">Ma'lumot topilmadi</td>
+                    <td colspan="6" class="text-center">Ma'lumot topilmadi</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
 
 <div class="card mt-4 dashboard-card animate__animated animate__fadeInUp">
     <div class="card-header">

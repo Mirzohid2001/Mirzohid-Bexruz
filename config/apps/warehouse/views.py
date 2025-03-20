@@ -7,11 +7,11 @@ from django.urls import reverse
 from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView
 from .models import (
     Product, Wagon, Movement, Inventory, Batch, 
-    Reservoir, ReservoirMovement,Warehouse
+    Reservoir, ReservoirMovement,Warehouse,LocalClient, LocalMovement
 )
 from .forms import (
     MovementForm, ProductForm, WagonForm, BatchForm,
-    ReservoirForm, ReservoirMovementForm
+    ReservoirForm, ReservoirMovementForm,LocalClientForm,LocalMovementForm
 )
 from .filters import (
     MovementFilter, ProductFilter, WagonFilter, 
@@ -19,23 +19,27 @@ from .filters import (
 )
 import json
 from django.db import models
+from django.urls import reverse_lazy
+from django.db.models import Q
 
 def index(request):
     return render(request, 'warehouse/index.html')
 
 def dashboard(request):
     total_in = Movement.objects.filter(movement_type='in').aggregate(total=Sum('quantity'))['total'] or 0
-    print(total_in)
     total_out = Movement.objects.filter(movement_type='out').aggregate(total=Sum('quantity'))['total'] or 0
-    print(total_out)
     net_movement = total_in - total_out
 
     inventory_summary = Inventory.objects.select_related('product').all()
 
     product_aggregates = Product.objects.annotate(
-        net_qty=(Sum('movement__quantity', filter=models.Q(movement__movement_type='in')) 
-                 - Sum('movement__quantity', filter=models.Q(movement__movement_type='out')))
+        net_qty=(
+            Sum('movement__quantity', filter=Q(movement__movement_type='in')) -
+            Sum('movement__quantity', filter=Q(movement__movement_type='out'))
+        )
     )
+    total_local_clients = LocalClient.objects.count()
+    total_local_movements = LocalMovement.objects.count()
 
     context = {
         'total_in': total_in,
@@ -43,6 +47,8 @@ def dashboard(request):
         'net_movement': net_movement,
         'inventory_summary': inventory_summary,
         'product_aggregates': product_aggregates,
+        'total_local_clients': total_local_clients,
+        'total_local_movements': total_local_movements,
     }
     return render(request, 'warehouse/dashboard.html', context)
 
@@ -155,11 +161,10 @@ class MovementListView(ListView):
     model = Movement
     template_name = 'warehouse/movement_list.html'
     context_object_name = 'movements'
-    ordering = ['-date']
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('product', 'wagon', 'batch')
-        self.filter = MovementFilter(self.request.GET, queryset=qs)
+        queryset = super().get_queryset()
+        self.filter = MovementFilter(self.request.GET, queryset=queryset)
         return self.filter.qs
 
     def get_context_data(self, **kwargs):
@@ -167,15 +172,17 @@ class MovementListView(ListView):
         context['filter'] = self.filter
         return context
 
-def movement_create(request):
-    if request.method == 'POST':
-        form = MovementForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('warehouse:movement_list'))
-    else:
-        form = MovementForm()
-    return render(request, 'warehouse/movement_create.html', {'form': form})
+class MovementCreateView(CreateView):
+    model = Movement
+    form_class = MovementForm
+    template_name = 'warehouse/movement_create.html'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        return response
+
+    def get_success_url(self):
+        return reverse('warehouse:movement_list')
 
 class InventoryListView(ListView):
     model = Inventory
@@ -393,3 +400,31 @@ class ReservoirMovementCreateView(CreateView):
 
     def get_success_url(self):
         return reverse('warehouse:reservoir_movement_list')
+    
+class LocalClientListView(ListView):
+    model = LocalClient
+    template_name = 'warehouse/localclient_list.html'
+    context_object_name = 'clients'
+
+class LocalClientCreateView(CreateView):
+    model = LocalClient
+    form_class = LocalClientForm
+    template_name = 'warehouse/localclient_form.html'
+    success_url = reverse_lazy('warehouse:localclient_list')
+
+class LocalMovementListView(ListView):
+    model = LocalMovement
+    template_name = 'warehouse/localmovement_list.html'
+    context_object_name = 'local_movements'
+    ordering = ['-date']
+
+class LocalMovementCreateView(CreateView):
+    model = LocalMovement
+    form_class = LocalMovementForm
+    template_name = 'warehouse/localmovement_form.html'
+    success_url = reverse_lazy('warehouse:localmovement_list')
+
+    def form_valid(self, form):
+        form.instance.mass = form.instance.density * form.instance.liter
+        return super().form_valid(form)
+

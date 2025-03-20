@@ -1,14 +1,13 @@
 from django.contrib import admin
 from .models import (
-    Warehouse, Product, Batch, Wagon,
-    Movement, Inventory, Reservoir, ReservoirMovement, AuditLog
+    Warehouse, Product, Batch, Wagon, Movement, Inventory, Reservoir, ReservoirMovement, AuditLog, LocalClient, LocalMovement
 )
 
 @admin.register(Warehouse)
 class WarehouseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'location')
-    search_fields = ('name', 'location')
-    list_filter = ('location',)
+    list_display = ('name', 'location', 'zone', 'location_code')
+    search_fields = ('name', 'location', 'zone')
+    list_filter = ('zone', 'location')
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -37,9 +36,9 @@ class WagonAdmin(admin.ModelAdmin):
 
 @admin.register(Movement)
 class MovementAdmin(admin.ModelAdmin):
-    list_display = ('date', 'document_number', 'product', 'batch', 'wagon', 'movement_type', 'quantity', 'price_sum', 'created_at')
-    search_fields = ('document_number', 'product__name', 'batch__batch_number', 'wagon__wagon_number')
-    list_filter = ('movement_type', 'date', 'product', 'batch')
+    list_display = ('date', 'document_number', 'product', 'wagon', 'movement_type', 'quantity', 'price_sum', 'created_at')
+    search_fields = ('document_number', 'product__name', 'wagon__wagon_number')
+    list_filter = ('movement_type', 'date', 'product')
     ordering = ('-date',)
 
 @admin.register(Inventory)
@@ -67,3 +66,18 @@ class AuditLogAdmin(admin.ModelAdmin):
     search_fields = ('model_name', 'object_id', 'action')
     list_filter = ('action', 'timestamp')
     ordering = ('-timestamp',)
+
+@admin.register(LocalClient)
+class LocalClientAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+@admin.register(LocalMovement)
+class LocalMovementAdmin(admin.ModelAdmin):
+    list_display = ('client', 'wagon', 'product', 'date', 'density', 'temperature', 'liter', 'mass')
+    search_fields = ('client__name', 'product__name', 'wagon__wagon_number')
+    list_filter = ('date', 'client', 'product')
+    ordering = ('-date',)
+
+
+

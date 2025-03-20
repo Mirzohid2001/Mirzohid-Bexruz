@@ -1,0 +1,17 @@
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const densityInput = document.getElementById('id_density');
+        const literInput = document.getElementById('id_liter');
+        const massInput = document.getElementById('id_mass');
+    
+        function calculateMass() {
+            const density = parseFloat(densityInput.value) || 0;
+            const liter = parseFloat(literInput.value) || 0;
+            massInput.value = (density * liter).toFixed(2);
+        }
+    
+        densityInput.addEventListener('input', calculateMass);
+        literInput.addEventListener('input', calculateMass);
+    });
+    </script>
+    
