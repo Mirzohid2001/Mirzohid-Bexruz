@@ -1,17 +1,16 @@
 {% extends 'warehouse/base.html' %}
 {% block content %}
-<h2>Rezervuar detallari: {{ reservoir.name }}</h2>
+<h2>Vagon detallari: {{ wagon.wagon_number }}</h2>
 
 <div class="card mb-4">
     <div class="card-body">
-        <h5>Rezervuar nomi: {{ reservoir.name }}</h5>
-        <p>Sig'im (tonna yoki litr): {{ reservoir.capacity }}</p>
-        <!-- Boshqa maydonlar -->
+        <h5>Vagon raqami: {{ wagon.wagon_number }}</h5>
+        <p>Vagon turi: {{ wagon.wagon_type }}</p>
+        <p>Sig'im (tonna): {{ wagon.capacity }}</p>
+        <p>Hajmi (L): {{ wagon.volume }}</p>
     </div>
 </div>
-
-<!-- 1) RezervuarMovement ro'yxati -->
-<h4>Rezervuar Harakatlari</h4>
+<h4>Vagon Harakatlari (Movement)</h4>
 <p>
     <strong>Jami Kirim:</strong> {{ total_in }} &nbsp;
     <strong>Jami Chiqim:</strong> {{ total_out }} &nbsp;
@@ -21,9 +20,10 @@
     <thead class="table-dark">
         <tr>
             <th>Sana</th>
+            <th>Hujjat #</th>
             <th>Mahsulot</th>
             <th>Harakat turi</th>
-            <th>Miqdor</th>
+            <th>Miqdor (qty)</th>
             <th>Izoh</th>
         </tr>
     </thead>
@@ -31,19 +31,18 @@
     {% for mv in movements %}
         <tr>
             <td>{{ mv.date }}</td>
+            <td>{{ mv.document_number }}</td>
             <td>{{ mv.product.name }}</td>
             <td>{{ mv.get_movement_type_display }}</td>
             <td>{{ mv.quantity }}</td>
             <td>{{ mv.note }}</td>
         </tr>
     {% empty %}
-        <tr><td colspan="5">Harakatlar mavjud emas</td></tr>
+        <tr><td colspan="6">Ma'lumot yo‘q</td></tr>
     {% endfor %}
     </tbody>
 </table>
-
-<!-- 2) Rezervuar Placement ro'yxati -->
-<h4>Rezervuar Placement (Mahsulot joylashuvi)</h4>
+<h4>Vagon Placement (Mahsulot joylashuvi)</h4>
 <table class="table table-striped">
     <thead class="table-secondary">
         <tr>
@@ -64,10 +63,12 @@
                     -
                 {% endif %}
             </td>
+            
         </tr>
     {% empty %}
         <tr><td colspan="3">Placement topilmadi</td></tr>
     {% endfor %}
     </tbody>
 </table>
+
 {% endblock content %}

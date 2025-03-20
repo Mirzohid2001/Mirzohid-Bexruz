@@ -87,10 +87,22 @@ class Batch(models.Model):
         verbose_name = "Партия"
         verbose_name_plural = "Партиялар"
 
+class WagonType(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Vagon turi")
+    meter_shtok_map = models.JSONField(blank=True, null=True, 
+        help_text="Masalan: {'1.0': 1000, '1.2':1200}, meter → litr")
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name = "Vagon turi"
+        verbose_name_plural = "Vagon turlari"
+
 
 class Wagon(models.Model):
     wagon_number = models.CharField(max_length=20, unique=True, verbose_name="Vagon raqami")
-    wagon_type = models.CharField(max_length=50, verbose_name="Vagon turi")
+    wagon_type = models.ForeignKey(WagonType, on_delete=models.SET_NULL, null=True, verbose_name="Vagon tipi")
     net_weight = models.FloatField(verbose_name="Netto og'irligi", default=0)
     meter_weight = models.FloatField(verbose_name="Meter og'irligi", default=0)
     capacity = models.FloatField(verbose_name="Sig'im (tonna)", default=0)
@@ -100,6 +112,12 @@ class Wagon(models.Model):
 
     def __str__(self):
         return f"{self.wagon_number} ({self.wagon_type})"
+    
+    def calculate_litr_from_meter(self, meter_value: float) -> float:
+        if not self.wagon_type or not self.wagon_type.meter_shtok_map:
+            return 0
+        best_key = str(meter_value)
+        return self.wagon_type.meter_shtok_map.get(best_key, 0)
 
     class Meta:
         ordering = ['wagon_number']
@@ -116,24 +134,47 @@ class LocalClient(models.Model):
         verbose_name = "Klient"
         verbose_name_plural = "Klientlar"
     
+
 class LocalMovement(models.Model):
-    client = models.ForeignKey(LocalClient, on_delete=models.CASCADE, verbose_name="Klient")
-    wagon = models.ForeignKey(Wagon, on_delete=models.SET_NULL, null=True, verbose_name="Vagon")
-    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, verbose_name="Mahsulot")
+    client = models.ForeignKey(
+        LocalClient, on_delete=models.CASCADE, verbose_name="Klient"
+    )
+    wagon = models.ForeignKey(
+        Wagon, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Vagon"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Mahsulot"
+    )
     date = models.DateField(verbose_name="Sana", default=timezone.now)
     density = models.FloatField(verbose_name="Zichlik (Удел)", default=0)
-    temperature = models.FloatField(verbose_name="Harorat", default=0)
+    temperature = models.FloatField(verbose_name="Harorat (°C)", default=0)
     liter = models.FloatField(verbose_name="Litr", default=0)
     mass = models.FloatField(verbose_name="Massa (kg)", default=0)
+    doc_ton = models.FloatField(verbose_name="Hujjat bo'yicha ton", default=0)
+    fact_ton = models.FloatField(verbose_name="Fakt ton", default=0)
+    difference_ton = models.FloatField(verbose_name="Farq (ton)", default=0, editable=False)
+    specific_weight = models.FloatField(verbose_name="Udel og‘irlik", default=0, blank=True, null=True)
+
     note = models.TextField(verbose_name="Izoh", blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        if self.density and self.liter:
+            self.mass = self.density * self.liter
+            self.specific_weight = self.density
+        self.difference_ton = self.doc_ton - self.fact_ton
+
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        if self.liter < 0 or self.mass < 0:
+            raise ValidationError("Litr yoki massa manfiy bo'lishi mumkin emas.")
+
     def __str__(self):
-        return f"{self.client.name} - {self.product.name} - {self.mass} kg"
-    
+        return f"{self.client.name} - {self.product} - {self.mass} kg"
+
     class Meta:
         verbose_name = "Harakat"
         verbose_name_plural = "Harakatlar"
-
 
 class Movement(models.Model):
     MOVEMENT_TYPES = (
@@ -152,14 +193,21 @@ class Movement(models.Model):
     batch = models.ForeignKey(Batch, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Parтия")
     price_sum = models.FloatField(verbose_name="Narx (so'm)", default=0)
     note = models.TextField(verbose_name="Izoh", blank=True, null=True)
+    doc_ton = models.FloatField(verbose_name="Hujjat bo'yicha ton", default=0)
+    fact_ton = models.FloatField(verbose_name="Fakt ton", default=0)
+    difference_ton = models.FloatField(verbose_name="Farq (ton)", default=0, editable=False)
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, verbose_name="Ombor", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
 
     def save(self, *args, **kwargs):
+        self.difference_ton = self.doc_ton - self.fact_ton
+
         if self.density and self.liter:
             self.quantity = self.density * self.liter
-            self.specific_weight = self.density 
+            self.specific_weight = self.density
+
         super().save(*args, **kwargs)
+
         product_obj = self.product
         total_in = Movement.objects.filter(product=product_obj, movement_type='in').aggregate(Sum('quantity'))['quantity__sum'] or 0
         total_out = Movement.objects.filter(product=product_obj, movement_type='out').aggregate(Sum('quantity'))['quantity__sum'] or 0
@@ -175,12 +223,10 @@ class Movement(models.Model):
         if self.movement_type == 'out':
             available = self.product.net_quantity() or 0
             qty = self.quantity or 0
-
             if qty > available:
                 raise ValidationError(
                     f"Mavjud qoldiq ({available}) dan oshiq chiqim kiritish mumkin emas!"
                 )
-
 
     def __str__(self):
         return f"{self.date} - {self.product.name} - {self.get_movement_type_display()} - {self.quantity}"
@@ -246,6 +292,31 @@ class ReservoirMovement(models.Model):
         res.out_qty = total_out
         res.quantity = total_in - total_out
         res.save()
+
+class Placement(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Mahsulot")
+    wagon = models.ForeignKey('Wagon', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Vagon")
+    reservoir = models.ForeignKey('Reservoir', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Rezervuar")
+    quantity = models.FloatField(verbose_name="Qisman miqdor (litr yoki kg)", default=0)
+    movement = models.ForeignKey('Movement', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Harakat")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if not self.wagon and not self.reservoir:
+            raise ValidationError("Vagon yoki Rezervuarni tanlashingiz kerak.")
+        if self.wagon and self.reservoir:
+            raise ValidationError("Faqat bitta joy tanlanishi mumkin: vagon yoki rezervuar.")
+        if self.quantity <= 0:
+            raise ValidationError("Miqdor manfiy yoki 0 bo‘lishi mumkin emas.")
+        
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        place = self.wagon.wagon_number if self.wagon else self.reservoir.name
+        return f"{self.product.name}: {self.quantity} → {place}"
+
 
 
 class AuditLog(models.Model):

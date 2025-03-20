@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    Warehouse, Product, Batch, Wagon, Movement, Inventory, Reservoir, ReservoirMovement, AuditLog, LocalClient, LocalMovement
+    Warehouse, Product, Batch, Wagon, Movement, Inventory, Reservoir, ReservoirMovement, AuditLog, LocalClient, LocalMovement,Placement,WagonType
 )
 
 @admin.register(Warehouse)
@@ -8,6 +8,11 @@ class WarehouseAdmin(admin.ModelAdmin):
     list_display = ('name', 'location', 'zone', 'location_code')
     search_fields = ('name', 'location', 'zone')
     list_filter = ('zone', 'location')
+
+@admin.register(WagonType)
+class WagonTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'meter_shtok_map')
+    search_fields = ('name',)
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -78,6 +83,13 @@ class LocalMovementAdmin(admin.ModelAdmin):
     search_fields = ('client__name', 'product__name', 'wagon__wagon_number')
     list_filter = ('date', 'client', 'product')
     ordering = ('-date',)
+
+@admin.register(Placement)
+class PlacementAdmin(admin.ModelAdmin):
+    list_display = ['product', 'wagon', 'reservoir', 'quantity', 'movement', 'created_at']
+    search_fields = ['product__name', 'wagon__wagon_number', 'reservoir__name']
+    list_filter = ['product', 'wagon', 'reservoir', 'movement']
+    ordering = ['-created_at']
 
 
 

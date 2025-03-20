@@ -3,7 +3,7 @@ DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'neft-baza-2',
+        'NAME': 'neft-system',
         'USER': 'postgres',
         'PASSWORD': '20010508',
         'HOST': 'localhost',

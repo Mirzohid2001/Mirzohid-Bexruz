@@ -7,15 +7,15 @@ from django.urls import reverse
 from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView
 from .models import (
     Product, Wagon, Movement, Inventory, Batch, 
-    Reservoir, ReservoirMovement,Warehouse,LocalClient, LocalMovement
+    Reservoir, ReservoirMovement,Warehouse,LocalClient, LocalMovement,Placement
 )
 from .forms import (
     MovementForm, ProductForm, WagonForm, BatchForm,
-    ReservoirForm, ReservoirMovementForm,LocalClientForm,LocalMovementForm
+    ReservoirForm, ReservoirMovementForm,LocalClientForm,LocalMovementForm,PlacementForm
 )
 from .filters import (
     MovementFilter, ProductFilter, WagonFilter, 
-    ReservoirFilter, ReservoirMovementFilter
+    ReservoirFilter, ReservoirMovementFilter,LocalMovementFilter
 )
 import json
 from django.db import models
@@ -31,13 +31,21 @@ def dashboard(request):
     net_movement = total_in - total_out
 
     inventory_summary = Inventory.objects.select_related('product').all()
-
     product_aggregates = Product.objects.annotate(
-        net_qty=(
-            Sum('movement__quantity', filter=Q(movement__movement_type='in')) -
-            Sum('movement__quantity', filter=Q(movement__movement_type='out'))
-        )
+        net_qty=Sum('movement__quantity', filter=Q(movement__movement_type='in')) -
+                 Sum('movement__quantity', filter=Q(movement__movement_type='out'))
     )
+
+    movement_diff = Movement.objects.aggregate(diff_sum=Sum('difference_ton'))['diff_sum'] or 0
+    localmovement_diff = LocalMovement.objects.aggregate(diff_sum=Sum('difference_ton'))['diff_sum'] or 0
+    grand_difference = movement_diff + localmovement_diff
+
+    if grand_difference < 0:
+        status_diff = "Zarar"
+    elif grand_difference > 0:
+        status_diff = "Foyda"
+    else:
+        status_diff = "Neutral"
     total_local_clients = LocalClient.objects.count()
     total_local_movements = LocalMovement.objects.count()
 
@@ -47,8 +55,12 @@ def dashboard(request):
         'net_movement': net_movement,
         'inventory_summary': inventory_summary,
         'product_aggregates': product_aggregates,
-        'total_local_clients': total_local_clients,
-        'total_local_movements': total_local_movements,
+        'movement_diff': movement_diff,
+        'localmovement_diff': localmovement_diff,
+        'grand_difference': grand_difference,
+        'status_diff': status_diff,
+        'total_local_clients': total_local_clients,        
+        'total_local_movements': total_local_movements,    
     }
     return render(request, 'warehouse/dashboard.html', context)
 
@@ -155,6 +167,29 @@ class WagonListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['filter'] = self.filter
+        return context
+    
+class WagonDetailView(DetailView):
+    model = Wagon
+    template_name = 'warehouse/wagon_detail.html'
+    context_object_name = 'wagon'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        wagon = self.get_object()
+
+        movements = Movement.objects.filter(wagon=wagon).order_by('-date')
+        total_in = movements.filter(movement_type='in').aggregate(total=Sum('quantity'))['total'] or 0
+        total_out = movements.filter(movement_type='out').aggregate(total=Sum('quantity'))['total'] or 0
+        net_qty = total_in - total_out
+
+        context['movements'] = movements
+        context['total_in'] = total_in
+        context['total_out'] = total_out
+        context['net_qty'] = net_qty
+        placements = Placement.objects.filter(wagon=wagon)
+        context['placements'] = placements
+
         return context
 
 class MovementListView(ListView):
@@ -351,15 +386,20 @@ class ReservoirDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         reservoir = self.get_object()
+
         movements = ReservoirMovement.objects.filter(reservoir=reservoir).order_by('-date')
-        total_in = movements.filter(movement_type='in').aggregate(Sum('quantity'))['quantity__sum'] or 0
-        total_out = movements.filter(movement_type='out').aggregate(Sum('quantity'))['quantity__sum'] or 0
+        total_in = movements.filter(movement_type='in').aggregate(total=Sum('quantity'))['total'] or 0
+        total_out = movements.filter(movement_type='out').aggregate(total=Sum('quantity'))['total'] or 0
         net_qty = total_in - total_out
         context['movements'] = movements
         context['total_in'] = total_in
         context['total_out'] = total_out
         context['net_qty'] = net_qty
+
+        placements = Placement.objects.filter(reservoir=reservoir)
+        context['placements'] = placements
         return context
+
 
 class ReservoirCreateView(CreateView):
     model = Reservoir
@@ -418,6 +458,17 @@ class LocalMovementListView(ListView):
     context_object_name = 'local_movements'
     ordering = ['-date']
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        self.filter = LocalMovementFilter(self.request.GET, queryset=qs)
+        return self.filter.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filter
+        return context
+
+
 class LocalMovementCreateView(CreateView):
     model = LocalMovement
     form_class = LocalMovementForm
@@ -428,3 +479,24 @@ class LocalMovementCreateView(CreateView):
         form.instance.mass = form.instance.density * form.instance.liter
         return super().form_valid(form)
 
+class PlacementListView(ListView):
+    model = Placement
+    template_name = 'warehouse/placement_list.html'
+    context_object_name = 'placements'
+    ordering = ['-created_at']
+
+class PlacementCreateView(CreateView):
+    model = Placement
+    form_class = PlacementForm
+    template_name = 'warehouse/placement_form.html'
+
+    def get_success_url(self):
+        return reverse('warehouse:placement_list')
+
+class PlacementUpdateView(UpdateView):
+    model = Placement
+    form_class = PlacementForm
+    template_name = 'warehouse/placement_form.html'
+
+    def get_success_url(self):
+        return reverse('warehouse:placement_list')

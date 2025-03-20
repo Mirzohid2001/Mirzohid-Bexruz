@@ -1,5 +1,5 @@
 import django_filters
-from .models import Movement, Product, Wagon , Reservoir, ReservoirMovement
+from .models import Movement, Product, Wagon , Reservoir, ReservoirMovement , LocalMovement,Placement
 
 class MovementFilter(django_filters.FilterSet):
     date = django_filters.DateFromToRangeFilter()
@@ -43,3 +43,26 @@ class ReservoirMovementFilter(django_filters.FilterSet):
     class Meta:
         model = ReservoirMovement
         fields = ['date', 'reservoir', 'product', 'movement_type']
+
+class LocalMovementFilter(django_filters.FilterSet):
+    date = django_filters.DateFromToRangeFilter(label="Sana oralig'i")
+    client = django_filters.CharFilter(field_name='client__name', lookup_expr='icontains', label="Klient nomi")
+    product = django_filters.CharFilter(field_name='product__name', lookup_expr='icontains', label="Mahsulot nomi")
+    doc_ton = django_filters.RangeFilter(label="Doc ton oralig'i")
+    fact_ton = django_filters.RangeFilter(label="Fact ton oralig'i")
+    
+
+    class Meta:
+        model = LocalMovement
+        fields = ['date', 'client', 'product', 'doc_ton', 'fact_ton']
+
+
+class PlacementFilter(django_filters.FilterSet):
+    product = django_filters.CharFilter(field_name='product__name', lookup_expr='icontains', label="Mahsulot nomi")
+    quantity = django_filters.RangeFilter(field_name='quantity', label="Miqdor oralig'i")
+    wagon = django_filters.CharFilter(field_name='wagon__wagon_number', lookup_expr='icontains', label="Vagon raqami")
+    reservoir = django_filters.CharFilter(field_name='reservoir__name', lookup_expr='icontains', label="Rezervuar nomi")
+
+    class Meta:
+        model = Placement
+        fields = ['product', 'quantity', 'wagon', 'reservoir']

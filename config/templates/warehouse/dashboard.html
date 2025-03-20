@@ -56,6 +56,39 @@
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="card text-bg-info mb-1 dashboard-card animate__animated animate__zoomIn">
+            <div class="card-body">
+                <h5 class="card-title">Movement farq (ton)</h5>
+                <p class="card-text display-6">{{ movement_diff }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-bg-warning mb-3 dashboard-card animate__animated animate__zoomIn">
+            <div class="card-body">
+                <h5 class="card-title">LocalMovement farq (ton)</h5>
+                <p class="card-text display-6">{{ localmovement_diff }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-bg-primary mb-3 dashboard-card animate__animated animate__zoomIn">
+            <div class="card-body">
+                <h5 class="card-title">Umumiy Farq (ton)</h5>
+                <p class="card-text display-6">{{ grand_difference }}</p>
+                {% if status_diff == "Zarar" %}
+                  <span class="fw-bold text-danger">ZARAR</span>
+                {% elif status_diff == "Foyda" %}
+                  <span class="fw-bold text-success">FOYDA</span>
+                {% else %}
+                  <span class="fw-bold text-muted">NEITRAL</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="card dashboard-card animate__animated animate__fadeInUp">

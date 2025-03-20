@@ -39,6 +39,9 @@
                     <td>{{ wagon.price_sum }}</td>
                     <td>{{ wagon.condition }}</td>
                 </tr>
+                <td>
+                    <a href="{% url 'warehouse:wagon_detail' wagon.pk %}" class="btn btn-sm btn-info">Detal</a>
+                </td>
             {% empty %}
                 <tr>
                     <td colspan="9" class="text-center">Ma'lumot topilmadi</td>

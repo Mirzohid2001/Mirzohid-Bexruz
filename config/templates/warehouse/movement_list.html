@@ -38,6 +38,9 @@
                     <th>Litr</th>
                     <th>Udel og‘irlik</th>
                     <th>Massa (kg)</th>
+                    <th>Doc ton</th>
+                    <th>Fact ton</th>
+                    <th>Farq (ton)</th>
                     <th>Narx</th>
                     <th>Izoh</th>
                 </tr>
@@ -54,12 +57,23 @@
                     <td>{{ mv.liter }}</td>
                     <td>{{ mv.specific_weight }}</td>
                     <td>{{ mv.quantity }}</td>
+                    <!-- Yangi ustunlar -->
+                    <td>{{ mv.doc_ton }}</td>
+                    <td>{{ mv.fact_ton }}</td>
+                    <td>
+                        {{ mv.difference_ton }}
+                        {% if mv.difference_ton < 0 %}
+                           <span class="text-danger fw-bold ms-2">ZARAR</span>
+                        {% elif mv.difference_ton > 0 %}
+                           <span class="text-success fw-bold ms-2">FOYDA</span>
+                        {% endif %}
+                    </td>
                     <td>{{ mv.price_sum }}</td>
                     <td>{{ mv.note }}</td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="11" class="text-center">Ma'lumot topilmadi</td>
+                    <td colspan="14" class="text-center">Ma'lumot topilmadi</td>
                 </tr>
             {% endfor %}
             </tbody>
