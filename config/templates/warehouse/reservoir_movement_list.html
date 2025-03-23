@@ -12,7 +12,28 @@
         Harakatlar ro'yxati
     </div>
     <div class="card-body">
-        <!-- Filtr form (ixtiyoriy) -->
+        <form method="get" class="row g-3 align-items-center mb-3 bg-light p-2">
+            <div class="col-auto">
+                <label>{{ filter.form.date.label }}</label>
+                {{ filter.form.date }}
+            </div>
+            <div class="col-auto">
+                <label>{{ filter.form.reservoir.label }}</label>
+                {{ filter.form.reservoir }}
+            </div>
+            <div class="col-auto">
+                <label>{{ filter.form.product.label }}</label>
+                {{ filter.form.product }}
+            </div>
+            <div class="col-auto">
+                <label>{{ filter.form.movement_type.label }}</label>
+                {{ filter.form.movement_type }}
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Filtrlash</button>
+            </div>
+        </form>
+        
         <table class="table table-striped table-hover">
             <thead class="table-dark">
                 <tr>

@@ -17,15 +17,24 @@
         Mahsulotlar ro'yxati
     </div>
     <div class="card-body">
-        <!-- Filtr formasi (agar django-filter ishlatsa) -->
-        <!--
-        <form method="get" class="row g-3 mb-3">
-            {{ filter.form.as_p }}
+        <form method="get" class="row g-3 align-items-center mb-3 bg-light p-2">
+            <div class="col-auto">
+                <label>{{ filter.form.name.label }}</label>
+                {{ filter.form.name }}
+            </div>
+            <div class="col-auto">
+                <label>{{ filter.form.category.label }}</label>
+                {{ filter.form.category }}
+            </div>
+            <div class="col-auto">
+                <label>{{ filter.form.warehouse.label }}</label>
+                {{ filter.form.warehouse }}
+            </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Filtrlash</button>
             </div>
         </form>
-        -->
+        
         <table class="table table-striped table-hover">
             <thead class="table-dark">
                 <tr>

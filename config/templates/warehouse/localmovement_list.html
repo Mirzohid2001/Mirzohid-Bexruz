@@ -3,13 +3,11 @@
 <h2>Mahalliy harakatlar ro'yxati</h2>
 <a href="{% url 'warehouse:localmovement_create' %}" class="btn btn-primary">Yangi harakat qo'shish</a>
 <form method="get" class="row gy-2 gx-3 align-items-center mb-3 border p-2 bg-light">
-    <!-- Sana oralig'i -->
     <div class="col-auto">
         <label class="form-label">{{ filter.form.date.label }}</label>
         {{ filter.form.date }}
     </div>
 
-    <!-- Klient nomi -->
     <div class="col-auto">
         <label class="form-label">{{ filter.form.client.label }}</label>
         {{ filter.form.client }}
@@ -43,7 +41,6 @@
             <th>Zichlik</th>
             <th>Litr</th>
             <th>Massa (kg)</th>
-            <!-- Yangi ustunlar -->
             <th>Doc ton</th>
             <th>Fact ton</th>
             <th>Farq (ton)</th>
@@ -61,7 +58,6 @@
             <td>{{ movement.density }}</td>
             <td>{{ movement.liter }}</td>
             <td>{{ movement.mass }}</td>
-            <!-- Yangi ustunlar ko'rsatish -->
             <td>{{ movement.doc_ton }}</td>
             <td>{{ movement.fact_ton }}</td>
             <td>

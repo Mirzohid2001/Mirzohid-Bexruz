@@ -2,20 +2,25 @@ import django_filters
 from .models import Movement, Product, Wagon , Reservoir, ReservoirMovement , LocalMovement,Placement
 
 class MovementFilter(django_filters.FilterSet):
-    date = django_filters.DateFromToRangeFilter()
-    product = django_filters.CharFilter(lookup_expr='icontains')
-    movement_type = django_filters.ChoiceFilter(choices=Movement.MOVEMENT_TYPES)
+    date = django_filters.DateFromToRangeFilter(label="Sana oralig'i")
+    product = django_filters.CharFilter(lookup_expr='icontains', label="Mahsulot nomi")
+    movement_type = django_filters.ChoiceFilter(choices=Movement.MOVEMENT_TYPES, label="Harakat turi")
+    warehouse = django_filters.CharFilter(field_name='warehouse__name', lookup_expr='icontains', label="Ombor nomi")
 
     class Meta:
         model = Movement
         fields = ['date', 'product', 'movement_type', 'warehouse']
 
+
 class ProductFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains')
+    name = django_filters.CharFilter(field_name="name", lookup_expr='icontains', label="Mahsulot nomi")
+    category = django_filters.CharFilter(field_name="category", lookup_expr='icontains', label="Kategoriya")
+    warehouse = django_filters.CharFilter(field_name="warehouse__name", lookup_expr='icontains', label="Ombor nomi")
 
     class Meta:
         model = Product
         fields = ['name', 'category', 'warehouse']
+
 
 
 class WagonFilter(django_filters.FilterSet):
@@ -34,6 +39,7 @@ class ReservoirFilter(django_filters.FilterSet):
         model = Reservoir
         fields = ['name', 'product']
 
+
 class ReservoirMovementFilter(django_filters.FilterSet):
     date = django_filters.DateFromToRangeFilter(field_name="date", label="Sana oralig'i")
     reservoir = django_filters.CharFilter(field_name="reservoir__name", lookup_expr='icontains', label="Rezervuar nomi")
@@ -43,6 +49,7 @@ class ReservoirMovementFilter(django_filters.FilterSet):
     class Meta:
         model = ReservoirMovement
         fields = ['date', 'reservoir', 'product', 'movement_type']
+
 
 class LocalMovementFilter(django_filters.FilterSet):
     date = django_filters.DateFromToRangeFilter(label="Sana oralig'i")
