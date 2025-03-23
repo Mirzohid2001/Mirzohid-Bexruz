@@ -20,9 +20,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # Place accounts at the beginning to ensure login access
+    path('accounts/', include('apps.accounts.urls')),
     path('admin/', admin.site.urls),
     path('', include('apps.dashboard.urls')),
-    path('accounts/', include('apps.accounts.urls')),
     path('warehouse/', include('apps.warehouse.urls')),
     path('production/', include('apps.production.urls')),
     path('accounting/', include('apps.accounting.urls')),

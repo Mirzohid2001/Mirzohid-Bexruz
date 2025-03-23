@@ -85,3 +85,5 @@ db.sqlite3-journal
 docker-compose.override.yml
 .dockerignore
 
+config/settings_dev.py
+config/settings_prod.py
