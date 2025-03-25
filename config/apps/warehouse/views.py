@@ -7,11 +7,11 @@ from django.urls import reverse
 from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView
 from .models import (
     Product, Wagon, Movement, Inventory, Batch, 
-    Reservoir, ReservoirMovement,Warehouse,LocalClient, LocalMovement,Placement
+    Reservoir, ReservoirMovement,Warehouse,LocalClient, LocalMovement,Placement,Client
 )
 from .forms import (
     MovementForm, ProductForm, WagonForm, BatchForm,
-    ReservoirForm, ReservoirMovementForm,LocalClientForm,LocalMovementForm,PlacementForm
+    ReservoirForm, ReservoirMovementForm,LocalClientForm,LocalMovementForm,PlacementForm,ClientForm
 )
 from .filters import (
     MovementFilter, ProductFilter, WagonFilter, 
@@ -47,6 +47,7 @@ def dashboard(request):
     else:
         status_diff = "Neutral"
     total_local_clients = LocalClient.objects.count()
+    total_client = Client.objects.count()
     total_local_movements = LocalMovement.objects.count()
 
     context = {
@@ -59,7 +60,8 @@ def dashboard(request):
         'localmovement_diff': localmovement_diff,
         'grand_difference': grand_difference,
         'status_diff': status_diff,
-        'total_local_clients': total_local_clients,        
+        'total_local_clients': total_local_clients,     
+        'total_client': total_client,   
         'total_local_movements': total_local_movements,    
     }
     return render(request, 'warehouse/dashboard.html', context)
@@ -149,7 +151,6 @@ class WarehouseReportView(TemplateView):
                 'zone': wh.zone,
                 'total_qty': total_qty,
             })
-        # JSON ga aylantirish
         context['warehouse_data_json'] = json.dumps(warehouse_data)
         return context
 
@@ -445,6 +446,17 @@ class LocalClientListView(ListView):
     model = LocalClient
     template_name = 'warehouse/localclient_list.html'
     context_object_name = 'clients'
+
+class ClientListView(ListView):
+    model = Client
+    template_name = 'warehouse/client_list.html'
+    context_object_name = 'clients'
+
+class ClientCreateView(CreateView):
+    model = Client
+    form_class = ClientForm
+    template_name = 'warehouse/client_form.html'
+    success_url = reverse_lazy('warehouse:client_list')
 
 class LocalClientCreateView(CreateView):
     model = LocalClient

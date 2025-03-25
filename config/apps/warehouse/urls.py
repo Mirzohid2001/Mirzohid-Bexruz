@@ -7,7 +7,8 @@ from .views import (
     BatchListView, BatchDetailView, BatchCreateView, BatchUpdateView,
     export_products_excel, export_movements_excel, export_wagons_excel ,ReservoirCreateView, ReservoirListView, ReservoirDetailView, 
     ReservoirUpdateView,ReservoirMovementListView, ReservoirMovementCreateView,WarehouseReportView,LocalClientListView, LocalClientCreateView,
-    LocalMovementListView, LocalMovementCreateView,PlacementCreateView, PlacementListView, PlacementUpdateView,WagonDetailView
+    LocalMovementListView, LocalMovementCreateView,PlacementCreateView, PlacementListView, PlacementUpdateView,WagonDetailView,ClientCreateView,
+    ClientListView
 )
 
 app_name = 'warehouse'
@@ -40,6 +41,8 @@ urlpatterns = [
     path('warehouse-report/', WarehouseReportView.as_view(), name='warehouse_report'),
     path('local-clients/', LocalClientListView.as_view(), name='localclient_list'),
     path('local-clients/create/', LocalClientCreateView.as_view(), name='localclient_create'),
+    path('clients/', ClientListView.as_view(), name='client_list'),
+    path('clients/create/', ClientCreateView.as_view(), name='client_create'),
     path('local-movements/', LocalMovementListView.as_view(), name='localmovement_list'),
     path('local-movements/create/', LocalMovementCreateView.as_view(), name='localmovement_create'),
     path('placements/', PlacementListView.as_view(), name='placement_list'),

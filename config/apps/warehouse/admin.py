@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    Warehouse, Product, Batch, Wagon, Movement, Inventory, Reservoir, ReservoirMovement, AuditLog, LocalClient, LocalMovement,Placement,WagonType
+    Warehouse, Product, Batch, Wagon, Movement, Inventory, Reservoir, ReservoirMovement, AuditLog, LocalClient, LocalMovement,Placement,WagonType,Client
 )
 
 @admin.register(Warehouse)
@@ -79,10 +79,48 @@ class LocalClientAdmin(admin.ModelAdmin):
 
 @admin.register(LocalMovement)
 class LocalMovementAdmin(admin.ModelAdmin):
-    list_display = ('client', 'wagon', 'product', 'date', 'density', 'temperature', 'liter', 'mass')
-    search_fields = ('client__name', 'product__name', 'wagon__wagon_number')
-    list_filter = ('date', 'client', 'product')
+    list_display = (
+        'date', 
+        'client', 
+        'product', 
+        'movement_type',
+        'wagon_or_reservoir',
+        'density', 
+        'temperature',
+        'liter', 
+        'mass_value',
+        'quantity', 
+        'doc_ton', 
+        'difference_ton'
+    )
+    search_fields = (
+        'client__name', 
+        'product__name', 
+        'wagon__wagon_number', 
+        'reservoir__name'
+    )
+    list_filter = (
+        'date', 
+        'movement_type', 
+        'client', 
+        'product'
+    )
     ordering = ('-date',)
+
+    def wagon_or_reservoir(self, obj):
+        if obj.wagon:
+            return f"Vagon: {obj.wagon.wagon_number}"
+        elif obj.reservoir:
+            return f"Rezervuar: {obj.reservoir.name}"
+        return "-"
+    wagon_or_reservoir.short_description = "Joylashuv"
+
+    def mass_value(self, obj):
+        return getattr(obj, 'mass', '-')
+    mass_value.short_description = "Massa (kg)"
+
+admin.site.register(Client)
+
 
 @admin.register(Placement)
 class PlacementAdmin(admin.ModelAdmin):

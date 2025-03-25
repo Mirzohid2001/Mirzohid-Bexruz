@@ -1,10 +1,8 @@
-# # apps/accounting/signals.py
 # from django.db.models.signals import post_save, post_delete
 # from django.dispatch import receiver
 # from apps.warehouse.models import Movement, LocalMovement
 # from .models import FinanceOperation
 
-# # 2.1 Movement yaratilganda
 # @receiver(post_save, sender=Movement)
 # def movement_to_finance(sender, instance, created, **kwargs):
 #     if created:
