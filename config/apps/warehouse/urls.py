@@ -6,9 +6,9 @@ from .views import (
     MovementCreateView,
     BatchListView, BatchDetailView, BatchCreateView, BatchUpdateView,
     export_products_excel, export_movements_excel, export_wagons_excel ,ReservoirCreateView, ReservoirListView, ReservoirDetailView, 
-    ReservoirUpdateView,ReservoirMovementListView, ReservoirMovementCreateView,WarehouseReportView,LocalClientListView, LocalClientCreateView,
+    ReservoirUpdateView,ReservoirMovementListView, ReservoirMovementCreateView,LocalClientListView, LocalClientCreateView,
     LocalMovementListView, LocalMovementCreateView,PlacementCreateView, PlacementListView, PlacementUpdateView,WagonDetailView,ClientCreateView,
-    ClientListView
+    ClientListView,ProductInventoryReportView
 )
 
 app_name = 'warehouse'
@@ -38,7 +38,7 @@ urlpatterns = [
     path('reservoirs/<int:pk>/update/', ReservoirUpdateView.as_view(), name='reservoir_update'),
     path('reservoir-movements/', ReservoirMovementListView.as_view(), name='reservoir_movement_list'),
     path('reservoir-movements/create/', ReservoirMovementCreateView.as_view(), name='reservoir_movement_create'),
-    path('warehouse-report/', WarehouseReportView.as_view(), name='warehouse_report'),
+    path('product-inventory/', ProductInventoryReportView.as_view(), name='product_inventory_report'),
     path('local-clients/', LocalClientListView.as_view(), name='localclient_list'),
     path('local-clients/create/', LocalClientCreateView.as_view(), name='localclient_create'),
     path('clients/', ClientListView.as_view(), name='client_list'),

@@ -136,22 +136,19 @@ class ProductUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('warehouse:product_list')
     
-class WarehouseReportView(TemplateView):
-    template_name = 'warehouse/warehouse_report.html'
+class ProductInventoryReportView(TemplateView):
+    template_name = 'warehouse/product_inventory_report.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        warehouses = Warehouse.objects.all()
-        warehouse_data = []
-        for wh in warehouses:
-            products = Product.objects.filter(warehouse=wh)
-            total_qty = sum([p.net_quantity() for p in products])
-            warehouse_data.append({
-                'name': wh.name,
-                'zone': wh.zone,
-                'total_qty': total_qty,
+        products = Product.objects.all()
+        product_data = []
+        for prod in products:
+            product_data.append({
+                'name': prod.name,
+                'net_quantity': prod.net_quantity(),
             })
-        context['warehouse_data_json'] = json.dumps(warehouse_data)
+        context['product_data_json'] = json.dumps(product_data)
         return context
 
 class WagonListView(ListView):
